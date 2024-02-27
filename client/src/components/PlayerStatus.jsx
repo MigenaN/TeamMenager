@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 const PlayerStatus = () => {
   const [players, setPlayers] = useState([]);
   const [update, setUpdate] = useState(false);
-  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
 
   useEffect(() => {
     axios.get('http://localhost:8000/api/players')
@@ -13,7 +12,7 @@ const PlayerStatus = () => {
   }, [update]);
 
   const changeState = (id, state) => {
-    axios.patch(`http://localhost:8000/api/players/${id}`, { state: state })
+    axios.patch(`http://localhost:8000/api/players/${id}`, { state })
       .then((res) => {
         console.log(res);
         setUpdate(!update);
@@ -21,54 +20,35 @@ const PlayerStatus = () => {
       .catch((err) => console.log(err));
   };
 
-  const getStatusButtonColor = (status) => {
-    switch (status) {
-      case 'Playing':
-        return 'green';
-      case 'Not Playing':
-        return 'red';
-      case 'Undecided':
-      default:
-        return 'yellow';
-    }
-  };
+  const getStatusButtonStyle = (status) => ({
+    backgroundColor: { 'Playing': 'green', 'Not Playing': 'red', 'Undecided': 'yellow' }[status],
+  });
 
-  const handleButtonClick = (playerId, state) => {
-    setSelectedPlayerId(playerId);
-    changeState(playerId, state);
+  const handleButtonClick = (playerId, status) => {
+    const updatedPlayers = players.map(player =>
+      player._id === playerId ? { ...player, state: status } : player
+    );
+
+    setPlayers(updatedPlayers);
+    changeState(playerId, status);
   };
 
   return (
     <div>
       <h1>Player Status</h1>
       <ul>
-        {players.map((player, i) => (
-          <li key={i}>
+        {players.map((player) => (
+          <li key={player._id}>
             {player.name} {player.position}
-            <button
-              style={{
-                backgroundColor: selectedPlayerId === player._id ? getStatusButtonColor(player.state) : 'white',
-              }}
-              onClick={() => handleButtonClick(player._id, 'Playing')}
-            >
-              Playing
-            </button>
-            <button
-              style={{
-                backgroundColor: selectedPlayerId === player._id ? getStatusButtonColor(player.state) : 'white',
-              }}
-              onClick={() => handleButtonClick(player._id, 'Not Playing')}
-            >
-              Not Playing
-            </button>
-            <button
-              style={{
-                backgroundColor: selectedPlayerId === player._id ? getStatusButtonColor(player.state) : 'white',
-              }}
-              onClick={() => handleButtonClick(player._id, 'Undecided')}
-            >
-              Undecided
-            </button>
+            {['Playing', 'Not Playing', 'Undecided'].map((status, index) => (
+              <button
+                key={index}
+                style={getStatusButtonStyle(player.state === status ? status : '')}
+                onClick={() => handleButtonClick(player._id, status)}
+              >
+                {status}
+              </button>
+            ))}
           </li>
         ))}
       </ul>
