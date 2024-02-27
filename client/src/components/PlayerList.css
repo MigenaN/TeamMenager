@@ -1,0 +1,12 @@
+.player-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px; 
+    border: 1px solid #cccccc; 
+    padding: 10px; 
+}
+
+.action-link, .action-button {
+    margin-left: 5px; 
+}
